@@ -190,3 +190,33 @@ Add the DockerHub username and access Token in Github repository
 7. In value > copy and paste the dockerHub token.
 8. Add Secret
 
+## Github actions checks.yml file 
+
+1. Create a folder .github/workflows
+2. Create a file checks.yml in it. 
+
+```yml 
+---
+name: Checks
+
+on: [push]
+
+jobs:
+  test-lint:
+    name: Test and Lint
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: docker-compose run --rm app sh -c "python manage.py wait_for_db && python manage.py test"
+      - name: Lint
+        run: docker-compose run --rm app sh -c "flake8"
+
+
+```
