@@ -1,1 +1,191 @@
-# **Rest API for a python Django app.**
+# **Python Django app docker setup and Github actions for running linting and unit test**
+
+## **Authenticate Github actions with DockerHub using AccessTokens**
+
+Authenticate Github actions with DockerHub using AccessTokens to use the free the docker images pull request of 200 per 6 hours.
+
+## **GitHub**
+
+1. Create an account in github and create a new repository with readme and gitignore file for python Django.
+2. Clone the repo to in the local computer.
+
+## **Generate access token in DockerHub**
+
+1. Create an account in DockerHub
+2. DockerHub > Settings > Security > Access Tokens > New Access Token
+3. Give a description eg. give the repository name created to easily identify
+4. Click Create and leave the page like that we need to use this token in github.
+
+Add the DockerHub username and access Token in Github repository
+
+1. In github repository > settings > secrets and variables > actions > New repository secrets
+2. Name > enter a name, eg: DockerHub_User
+3. In value > enter username used to login to DockerHub
+4. Add Secret
+5. Click New repository secrets
+6. Add a new secret name, eg: DockerHub_Token
+7. In value > copy and paste the dockerHub token.
+8. Add Secret
+
+## **In the cloned folder in the local machine create the following files**
+
+.dockerignore
+
+```txt
+
+# Git
+.git
+.gitignore
+
+# Docker
+.docker
+
+# Python
+app/__pycache__/
+app/*/__pycache__/
+app/*/*/__pycache__/
+app/*/*/*/__pycache__/
+.env/
+.venv/
+venv/
+
+```
+
+requirements.txt
+
+For latest [Django version](https://www.djangoproject.com/download/) and [Django rest framework](https://www.django-rest-framework.org/community/release-notes/#314x-series)
+
+```txt
+
+Django>=4.1,<4.2
+djangorestframework>=3.14,<3.15
+
+```
+
+For latest [Flake versions](https://pypi.org/project/flake8/)
+
+requirements.dev.txt
+
+```txt
+
+flake8>=6.0,<6.1
+
+```
+
+Dockerfile
+
+```Dockerfile
+
+FROM python:3.11.1-alpine3.17
+LABEL maintainer="johnpaulbabu@gmail.com"
+ENV PYTHONUNBUFFERED 1
+COPY ./requirements.txt /tmp/requirements.txt
+COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+COPY ./app /app
+WORKDIR /app
+EXPOSE 8000
+ARG DEV=false
+RUN python -m venv /py && \
+    /py/bin/pip install --upgrade pip && \
+    /py/bin/pip install -r /tmp/requirements.txt && \
+    if [ $DEV = "true" ]; \
+        then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
+    fi && \
+    rm -rf /tmp && \
+    adduser \
+        --disabled-password \
+        --no-create-home \
+        django-user
+ENV PATH="/py/bin:$PATH"
+USER django-user
+
+```
+## Docker file explanation 
+
+Setting PYTHONUNBUFFERED to a non-empty value different from 0 ensures that the python output i.e. the stdout and stderr streams are sent straight to terminal (e.g. your container log) without being first buffered and that you can see the output of your application (e.g. django logs) in real time.
+
+```bash
+
+ENV PYTHONUNBUFFERED 1
+
+```
+
+
+The below bash script in the above docker files put a condition to include development dependencies in the build or not.
+
+```bash
+
+if [ $DEV = "true" ]; \
+        then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
+    fi && \
+
+```
+
+The ARG DEV variable is set to false by default, but we can set it to true from the docker compose file to
+install the development dependencies from the requirement.dev.txt file.
+
+```bash
+ARG DEV=false 
+```
+
+In the dockerfile for security reasons we create another user so as not to run the container as a default root user.
+
+```bash
+
+adduser \
+        --disabled-password \
+        --no-create-home \
+        django-user
+
+```
+
+docker-compose.yml
+
+```yml
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        - DEV=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8000"
+```
+
+Build the docker containers
+
+```ShellCommand
+
+docker-compose build
+
+```
+
+Run the linting tool
+
+```ShellCommand
+
+docker-compose run --rm app sh -c "flake8"
+
+```
+
+To create Django project use the Django CLI command to create a new project called app in the current directory.
+
+```ShellCommand
+
+docker-compose run --rm app sh -c "django-admin startproject app ."
+
+```
+
+To run the development server
+
+```ShellCommand
+
+docker-compose up
+
+```
