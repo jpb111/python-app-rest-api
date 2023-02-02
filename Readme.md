@@ -141,6 +141,20 @@ services:
       sh -c "python manage.py runserver 0.0.0.0:8000"
 ```
 
+Create a folder app and create a file .flake8 in it and add the following to it to exclude the files from testing. 
+
+```text
+
+[flake8]
+exclude =
+  migrations,
+  __pycache__,
+  manage.py,
+  settings.py
+
+
+```
+
 Build the docker containers
 
 ```ShellCommand
