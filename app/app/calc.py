@@ -1,8 +1,6 @@
-"""
-Calculator functions
-"""
+"""Calculator functions"""
 
 
-def add(x, y):
+def add(number1, number2):
     """Add x and y and return result."""
-    return x + y
+    return number1 + number2
