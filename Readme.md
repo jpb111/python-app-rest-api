@@ -282,7 +282,7 @@ import django.test and import the function that needed testing Create a class an
 
 ```yaml 
   db: 
-    image: postgres:13-alpine
+    image: postgres:15-alpine
     volumes: 
       - dev-db-data:/var/lib/postgresql/data
 
@@ -321,7 +321,7 @@ services:
     depends_on:
       - db
   db: 
-    image: postgres:13-alpine
+    image: postgres:15-alpine
     volumes: 
       - dev-db-data:/var/lib/postgresql/data
     environment: 
@@ -336,5 +336,94 @@ volumes:
 ```
 
 we add the same environment to the app and to the db so they can communicate with each other. We also specify a DB_HOST=db in the app environment to db is the service name of the database. 
+
+We can do a 
+
+```shell
+
+docker compose up
+
+```
+to make sure everything is configured and working correctly. 
+
+
+## Configure Django with database 
+
+* Engine (type of database)
+* Hostname (IP or domain name for database)
+* Port 
+* Database Name 
+* Username 
+* Password 
+
+*** Python code to pulls in environment vairables *** 
+
+```python 
+
+os.environ.get('DB_HOST')
+
+```
+
+*** Psycopg2 ***
+
+* Most popular PostgresSQL adaptor for Python 
+* Supported by Django 
+
+
+*** Installation options 
+### psycopg2-binary 
+* Ok for development  
+* not good for production 
+
+### psycopg2 
+
+* good for production as it offers good performance 
+* Required additional dependencies 
+
+Installing Psycopg2 
+
+* List of package dependencies in docs 
+
+- C complier 
+- python3-dev
+- libpq-dev
+
+* Equivalent packages for Alpine 
+
+- postgresql-client
+- build-base
+- postgresql-dev
+- musl-dev
+
+Customize the docker file to clean up dependencies after package installation 
+
+
+To add the above dependencies to install Psycopg2 in python-alpine add these 3 lines to the dockerfile. The first line is a client package neeeded the docker image to run psycopg2. The second line we group the package to name .tmp-build-deps so we can use this to remove the packages later. The third line install the packages build-base postgresql-dev and musl-dev. 
+
+```bash
+
+apk add --update --no-cache postgresql-client && \
+apk add --update --no-cache --virtual .tmp-build-deps \
+  build-base postgresql-dev musl-dev && \
+
+
+```
+
+also add these command to remove 
+```bash
+ apk del .tmp-build-deps && \
+
+```
+
+Removes the above packages installed in the .tmp-build-deps 
+
+
+
+
+
+
+
+
+
 
 
