@@ -347,7 +347,7 @@ docker compose up
 to make sure everything is configured and working correctly. 
 
 
-## Configure Django with database 
+# Configure Django with database 
 
 * Engine (type of database)
 * Hostname (IP or domain name for database)
@@ -416,6 +416,57 @@ also add these command to remove
 ```
 
 Removes the above packages installed in the .tmp-build-deps 
+
+## Django settings.py configuration 
+
+Edit the file /app/app/settings.py 
+
+Add and import to the top of the file to add the environment variables 
+
+```python 
+
+import os 
+
+```
+
+Go to the DATABASES section and edit the default database 
+
+```python 
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+```
+to 
+
+```python 
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+```
+
+Remove the db.sqlite database automatically created as we do not use it. 
+
+
+## Fixing database race condition when using docker-compose
+
+Create a Django app called core to create a management command 
+
+```shell
+
+docker-compose run --rm app sh -c "python manage.py startapp core" 
+
+```
+
 
 
 
