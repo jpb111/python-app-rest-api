@@ -186,6 +186,8 @@ To run the development server
 docker-compose up
 
 ```
+
+Go to http://127.0.0.1:8000/ to see the django start page
 ## **Generate access token in DockerHub**
 
 1. Create an account in DockerHub
@@ -552,6 +554,7 @@ Now we update the docker compose file
 
 
 ```
+
 
 This will run the wait_for_db command and then do the server migrations if any and then run the server. 
 
