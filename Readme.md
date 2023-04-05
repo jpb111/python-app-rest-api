@@ -467,13 +467,93 @@ docker-compose run --rm app sh -c "python manage.py startapp core"
 
 ```
 
+We also create a wait_for_db command in the core app and also the test cases for it
+
+wait_for_db.py
+
+```python
+
+
+"""
+Django command to wait for the database to be available.
+"""
+import time
+
+from psycopg2 import OperationalError as Psycopg2OpError
+
+from django.db.utils import OperationalError
+from django.core.management.base import BaseCommand
+
+
+class Command(BaseCommand):
+    """Django command to wait for database."""
+
+    def handle(self, *args, **options):
+        """Entrypoint for command."""
+        self.stdout.write('Waiting for database...')
+        db_up = False
+        while db_up is False:
+            try:
+                self.check(databases=['default'])
+                db_up = True
+            except (Psycopg2OpError, OperationalError):
+                self.stdout.write('Database unavailable, waiting 1 second...')
+                time.sleep(1)
+
+        self.stdout.write(self.style.SUCCESS('Database available!'))
+
+```
+
+test_commands.py
+
+```python
+
+"""
+Django command to wait for the database to be available.
+"""
+import time
+
+from psycopg2 import OperationalError as Psycopg2OpError
+
+from django.db.utils import OperationalError
+from django.core.management.base import BaseCommand
+
+
+class Command(BaseCommand):
+    """Django command to wait for database."""
+
+    def handle(self, *args, **options):
+        """Entrypoint for command."""
+        self.stdout.write('Waiting for database...')
+        db_up = False
+        while db_up is False:
+            try:
+                self.check(databases=['default'])
+                db_up = True
+            except (Psycopg2OpError, OperationalError):
+                self.stdout.write('Database unavailable, waiting 1 second...')
+                time.sleep(1)
+
+        self.stdout.write(self.style.SUCCESS('Database available!'))
+
+
+
+```
 
 
 
 
+Now we update the docker compose file 
+
+```bash
+   sh -c "python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
 
 
+```
 
+This will run the wait_for_db command and then do the server migrations if any and then run the server. 
 
 
 

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-import os 
+import os
 
 from pathlib import Path
 
@@ -81,7 +81,8 @@ DATABASES = {
         'HOST': os.environ.get('DB_HOST'),
         'NAME': os.environ.get('DB_NAME'),
         'USER': os.environ.get('DB_USER'),
-        'PASS': os.environ.get('DB_PASS'),
+        'PASSWORD': os.environ.get('DB_PASS'),
+        'PORT': 5432,
     }
 }
 
