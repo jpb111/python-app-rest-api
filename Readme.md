@@ -558,6 +558,19 @@ Now we update the docker compose file
 
 This will run the wait_for_db command and then do the server migrations if any and then run the server. 
 
+## Update the CI/CD file 
+
+We need to add python manage.py wait_for_db before we run the tests 
+
+So update the checks.yml file
+
+```yaml
+
+run:  docker-compose run --rm app sh -c "python manage.py wait_for_db && python manage.py test"
+
+```
 
 
+## Django user model
 
+Use custom user model before migrations else we will have issues 
